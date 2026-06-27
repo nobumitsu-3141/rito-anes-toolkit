@@ -165,9 +165,9 @@
       <button class="tab" role="tab" aria-selected="true" onclick="show(0,this)"><span class="dot" style="background:var(--cyan)"></span>気道</button>
       <button class="tab" role="tab" aria-selected="false" onclick="show(1,this)"><span class="dot" style="background:var(--teal)"></span>薬剤</button>
       <button class="tab" role="tab" aria-selected="false" onclick="show(2,this)"><span class="dot" style="background:var(--amber)"></span>バイタル</button>
-      <button class="tab" role="tab" aria-selected="false" onclick="show(3,this)"><span class="dot" style="background:var(--red)"></span>緊急 (PALS)</button>
-      <button class="tab" role="tab" aria-selected="false" onclick="show(4,this)"><span class="dot" style="background:var(--rose)"></span>区域・持続</button>
-      <button class="tab" role="tab" aria-selected="false" onclick="show(5,this)"><span class="dot" style="background:var(--violet)"></span>輸液・輸血</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(3,this)"><span class="dot" style="background:var(--violet)"></span>輸液・輸血</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(4,this)"><span class="dot" style="background:var(--red)"></span>緊急 (PALS)</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(5,this)"><span class="dot" style="background:var(--rose)"></span>区域・持続</button>
     </nav>
   </div>
 </header>
@@ -234,6 +234,33 @@
     </details>
   </section>
 
+  <!-- ===== FLUIDS / BLOOD ===== -->
+  <section class="panel" id="p4" style="--ac:var(--violet)">
+    <div class="phead"><h2>輸液・輸血</h2><span class="first">維持・欠乏・許容出血量</span></div>
+    <p class="sub">維持輸液は 4-2-1 ルール。維持には等張(バランス)輸液を用い、低張液は低Na血症リスクのため回避。</p>
+
+    <div class="card"><h3><span class="bar"></span>維持・欠乏・ボーラス</h3>
+      <div class="inrow">
+        <div class="field sm"><label for="fast">絶飲食 (時間)</label><input id="fast" type="number" inputmode="decimal" value="6" min="0" max="24" step="0.5" oninput="recalc()"></div>
+        <div class="doul" style="margin:0"><li>欠乏量 ≒ 維持 × 絶飲食時間。古典的には1時間目に½、2・3時間目に各¼を補充(現在はバランス輸液主体で柔軟に)。</li></div>
+      </div>
+      <div class="dosegrid" id="fluidGrid"></div>
+    </div>
+
+    <div class="card"><h3><span class="bar"></span>循環血液量・許容出血量(MABL)</h3>
+      <div class="inrow">
+        <div class="field sm"><label for="hbi">術前Hb</label><input id="hbi" type="number" inputmode="decimal" value="11" min="3" max="22" step="0.1" oninput="recalc()"></div>
+        <div class="field sm"><label for="hbmin">許容下限Hb</label><input id="hbmin" type="number" inputmode="decimal" value="7" min="3" max="15" step="0.1" oninput="recalc()"></div>
+        <div class="doul" style="margin:0"><li>MABL ≒ 循環血液量 ×(術前Hb − 下限Hb)/術前Hb。濃厚赤血球 10–15 mL/kg で Hb 約2–3 g/dL 上昇。</li></div>
+      </div>
+      <div class="dosegrid" id="bloodGrid"></div>
+    </div>
+
+    <details class="refbox"><summary>文献</summary>
+      <p class="ref">維持輸液：<b>Holliday MA, Segar WE.</b> <i>Pediatrics</i> 1957（4-2-1）。低張液回避：APA / NICE 小児輸液ガイダンス。循環血液量・MABL：<b>Coté</b> 小児麻酔テキスト（新生児80–90、乳児75–80、小児70–75 mL/kg。早産児90–100）。</p>
+    </details>
+  </section>
+
   <!-- ===== PALS ===== -->
   <section class="panel" id="p2" style="--ac:var(--red)">
     <div class="phead"><h2>緊急・蘇生（PALS）</h2><span class="first">→ 体重から一括算出</span></div>
@@ -278,33 +305,6 @@
 
     <details class="refbox"><summary>文献</summary>
       <p class="ref">極量：リドカイン 4.5 mg/kg（アドレナリン併用 7 mg/kg）、ブピバカイン/レボブピバカイン 2.5 mg/kg、ロピバカイン 3 mg/kg（<b>NYSORA</b> 小児区域麻酔、Iowa Head&Neck Protocols）。新生児は減量。持続静注：プロポフォール 6–12 mg/kg/hr、レミフェンタニル 0.1–0.5 µg/kg/min、デクスメデトミジン 負荷0.5–1 µg/kg(10分)→維持0.2–1.0 µg/kg/hr（<b>BJA Education</b> 2020 小児デクスメデトミジン）、フェンタニル 1–5 µg/kg/hr、ミダゾラム 1–5 µg/kg/min、ケタミン 0.1–0.5 mg/kg/hr（鎮痛）。γ早見：体重×3 mg を 50 mL に溶くと 1 mL/hr = 1 µg/kg/min（1γ）。</p>
-    </details>
-  </section>
-
-  <!-- ===== FLUIDS / BLOOD ===== -->
-  <section class="panel" id="p4" style="--ac:var(--violet)">
-    <div class="phead"><h2>輸液・輸血</h2><span class="first">維持・欠乏・許容出血量</span></div>
-    <p class="sub">維持輸液は 4-2-1 ルール。維持には等張(バランス)輸液を用い、低張液は低Na血症リスクのため回避。</p>
-
-    <div class="card"><h3><span class="bar"></span>維持・欠乏・ボーラス</h3>
-      <div class="inrow">
-        <div class="field sm"><label for="fast">絶飲食 (時間)</label><input id="fast" type="number" inputmode="decimal" value="6" min="0" max="24" step="0.5" oninput="recalc()"></div>
-        <div class="doul" style="margin:0"><li>欠乏量 ≒ 維持 × 絶飲食時間。古典的には1時間目に½、2・3時間目に各¼を補充(現在はバランス輸液主体で柔軟に)。</li></div>
-      </div>
-      <div class="dosegrid" id="fluidGrid"></div>
-    </div>
-
-    <div class="card"><h3><span class="bar"></span>循環血液量・許容出血量(MABL)</h3>
-      <div class="inrow">
-        <div class="field sm"><label for="hbi">術前Hb</label><input id="hbi" type="number" inputmode="decimal" value="11" min="3" max="22" step="0.1" oninput="recalc()"></div>
-        <div class="field sm"><label for="hbmin">許容下限Hb</label><input id="hbmin" type="number" inputmode="decimal" value="7" min="3" max="15" step="0.1" oninput="recalc()"></div>
-        <div class="doul" style="margin:0"><li>MABL ≒ 循環血液量 ×(術前Hb − 下限Hb)/術前Hb。濃厚赤血球 10–15 mL/kg で Hb 約2–3 g/dL 上昇。</li></div>
-      </div>
-      <div class="dosegrid" id="bloodGrid"></div>
-    </div>
-
-    <details class="refbox"><summary>文献</summary>
-      <p class="ref">維持輸液：<b>Holliday MA, Segar WE.</b> <i>Pediatrics</i> 1957（4-2-1）。低張液回避：APA / NICE 小児輸液ガイダンス。循環血液量・MABL：<b>Coté</b> 小児麻酔テキスト（新生児80–90、乳児75–80、小児70–75 mL/kg。早産児90–100）。</p>
     </details>
   </section>
 
