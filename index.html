@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>小児麻酔オールインワン｜離島麻酔ツールキット</title>
+<meta name="description" content="離島麻酔ツールキット・小児：体重/年齢から気道サイズ・薬剤・PALS・区域麻酔・輸液を一括算出">
+<meta name="theme-color" content="#0c111b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="小児麻酔">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root{
+    --ink:#0c111b; --surface:#141b29; --elev:#1c2536; --line:#2a3550;
+    --txt:#e9eef7; --muted:#93a1b8; --dim:#6c7b95;
+    --cyan:#38bdf8; --teal:#2dd4bf; --amber:#f5a524; --rose:#fb7185; --violet:#a78bfa; --red:#ef4444; --green:#34d399;
+    --warn-bg:#3a1d1d; --warn-line:#7f3030;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --ui:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--ink);color:var(--txt);font-family:var(--ui);-webkit-text-size-adjust:100%}
+  body{line-height:1.5;padding-bottom:48px}
+  .wrap{max-width:900px;margin:0 auto;padding:0 14px}
+
+  header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,#0c111b 70%,rgba(12,17,27,.86));border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+  .topgrid{display:flex;align-items:flex-end;gap:14px;padding:10px 0;flex-wrap:wrap}
+  .brand{display:flex;flex-direction:column;line-height:1.15;margin-right:auto}
+  .brand b{font-size:15px;letter-spacing:.02em}
+  .brand span{font-size:11px;color:var(--dim);font-family:var(--mono)}
+  .field{display:flex;flex-direction:column;gap:3px}
+  .field label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .field input{width:88px;background:var(--elev);border:1px solid var(--line);border-radius:9px;color:var(--txt);
+    font-family:var(--mono);font-size:22px;font-weight:600;padding:6px 10px;text-align:right;font-variant-numeric:tabular-nums}
+  .field input:focus{outline:2px solid var(--cyan);outline-offset:1px;border-color:transparent}
+  .field.sm input{width:70px;font-size:18px}
+  .seg{display:inline-flex;background:var(--elev);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{background:transparent;border:0;color:var(--muted);font-family:var(--ui);font-size:13px;padding:8px 12px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--cyan);color:#04293b;font-weight:700}
+  .estbtn{background:var(--elev);border:1px solid var(--line);color:var(--cyan);border-radius:9px;padding:8px 11px;font-size:12px;cursor:pointer;font-family:var(--ui);white-space:nowrap}
+  .estbtn:hover{border-color:var(--cyan)}
+  .ageline{display:flex;align-items:flex-end;gap:8px}
+  .actions{display:flex;gap:8px;align-items:flex-end}
+  .iconbtn{background:var(--elev);border:1px solid var(--line);color:var(--muted);border-radius:9px;padding:8px 11px;font-size:12px;cursor:pointer;font-family:var(--ui);white-space:nowrap}
+  .iconbtn:hover{border-color:var(--cyan);color:var(--txt)}
+  .iconbtn.ok{border-color:var(--green);color:var(--green)}
+
+  nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 0 0;scrollbar-width:none}
+  nav.tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;background:var(--surface);border:1px solid var(--line);border-bottom:none;
+    border-radius:11px 11px 0 0;color:var(--muted);padding:10px 15px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .tab .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
+  .tab[aria-selected="true"]{color:var(--txt);background:var(--elev)}
+  .tab:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
+
+  main{padding-top:16px}
+  .panel{display:none}
+  .panel.active{display:block;animation:fade .18s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .phead{display:flex;align-items:baseline;gap:12px;border-left:4px solid var(--ac);padding:2px 0 2px 12px;margin-bottom:6px}
+  .phead h2{font-size:20px;letter-spacing:.01em}
+  .phead .first{font-size:13px;color:var(--ac);font-weight:600}
+  .sub{color:var(--dim);font-size:12px;margin:0 0 16px 16px}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .card h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .card h3 .bar{width:18px;height:2px;background:var(--ac);border-radius:2px}
+
+  .dosegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .dose{background:var(--elev);border:1px solid var(--line);border-radius:11px;padding:12px 14px;position:relative;overflow:hidden}
+  .dose::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ac)}
+  .dose .lab{font-size:11px;color:var(--muted);margin-bottom:5px;display:block;line-height:1.35}
+  .dose .val{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--ac);font-variant-numeric:tabular-nums;line-height:1}
+  .dose .unit{font-size:13px;color:var(--muted);font-weight:500;margin-left:4px}
+  .dose .note{font-size:11px;color:var(--dim);margin-top:6px;font-family:var(--mono)}
+  .dose.alt::before{background:var(--dim)}
+  .dose.alt .val{color:var(--txt);font-size:24px}
+
+  .warn{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:11px;padding:12px 14px;margin-bottom:14px}
+  .warn h4{font-size:12px;color:#ff9a9a;letter-spacing:.06em;margin-bottom:7px;text-transform:uppercase}
+  .warn ul{list-style:none;font-size:13px}
+  .warn li{padding:3px 0 3px 18px;position:relative;color:#ffd9d9}
+  .warn li::before{content:"!";position:absolute;left:4px;color:#ff7a7a;font-weight:700;font-size:12px}
+
+  .doul{list-style:none;font-size:13px;margin-top:4px}
+  .doul li{padding:3px 0 3px 18px;position:relative;color:var(--muted)}
+  .doul li::before{content:"›";position:absolute;left:2px;color:var(--ac);font-weight:700}
+
+  .inrow{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;background:var(--elev);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .inrow .field input{background:var(--surface)}
+
+  .ref{font-size:11px;color:var(--dim);line-height:1.7;margin-top:4px}
+  .ref b{color:var(--muted);font-weight:600}
+  details.refbox{margin-top:8px}
+  details.refbox summary{font-size:11px;color:var(--muted);cursor:pointer;letter-spacing:.05em;text-transform:uppercase;list-style:none}
+  details.refbox summary::-webkit-details-marker{display:none}
+  details.refbox summary::before{content:"▸ ";color:var(--ac)}
+  details.refbox[open] summary::before{content:"▾ "}
+
+  .bigrow{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+  @media(max-width:620px){.bigrow{grid-template-columns:1fr}}
+
+  footer{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+  .disc{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:11px;padding:11px 13px;font-size:11.5px;color:#ffd9d9;line-height:1.6}
+  .disc b{color:#ffb3b3}
+  .ver{font-size:10px;color:var(--dim);font-family:var(--mono);text-align:right;margin-top:8px}
+  @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+
+  /* ---- 印刷：全タブを1枚に展開（白地）---- */
+  @media print{
+    @page{margin:12mm}
+    html,body{background:#fff;color:#000;padding:0}
+    header{position:static;background:#fff;border:none;backdrop-filter:none}
+    nav.tabs,.actions,.estbtn,.seg,.refbox{display:none !important}
+    .topgrid{padding:0 0 6px;border-bottom:2px solid #000}
+    .brand b{color:#000}.brand span{color:#444}
+    .field label{color:#333}.field input{border:none;background:none;color:#000;font-size:18px;padding:0;width:auto;text-align:left}
+    .panel{display:block !important;break-inside:avoid;page-break-inside:avoid;margin-bottom:8px}
+    .phead{border-color:#000}.phead h2{font-size:15px;color:#000}.phead .first{color:#333}
+    .sub{display:none}
+    .card{border:1px solid #999;background:#fff;padding:8px;margin-bottom:8px;break-inside:avoid}
+    .card h3{color:#000}
+    .dosegrid{grid-template-columns:repeat(4,1fr);gap:6px}
+    .dose{background:#fff;border:1px solid #bbb;padding:6px 8px}
+    .dose .val{color:#000;font-size:16px}.dose .lab{color:#222}.dose .note{color:#555}
+    .dose::before{display:none}
+    .warn{background:#fff;border:1px solid #000;color:#000}.warn h4{color:#000}.warn li{color:#000}
+    .disc{background:#fff;border:1px solid #000;color:#000}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="topgrid">
+      <div class="brand">
+        <b>小児麻酔オールインワン</b>
+        <span>GOTO ANESTHESIA TOOLKIT · PEDIATRIC</span>
+      </div>
+      <div class="ageline">
+        <div class="field">
+          <label for="age">年齢</label>
+          <input id="age" type="number" inputmode="decimal" value="3" min="0" max="18" step="0.5" oninput="recalc()">
+        </div>
+        <div class="seg" role="group" aria-label="年齢単位">
+          <button id="uY" aria-pressed="true" onclick="setUnit('y')">年</button>
+          <button id="uM" aria-pressed="false" onclick="setUnit('m')">月</button>
+        </div>
+        <button class="estbtn" onclick="estWeight()">年齢→体重推定</button>
+      </div>
+      <div class="field">
+        <label for="wt">体重 kg</label>
+        <input id="wt" type="number" inputmode="decimal" value="15" min="0.5" max="120" step="0.1" oninput="recalc()">
+      </div>
+      <div class="actions">
+        <button class="iconbtn" id="copyBtn" onclick="copySummary()" title="この体重の主要値をコピー">📋 コピー</button>
+        <button class="iconbtn" onclick="window.print()" title="全タブを1枚に印刷/PDF">🖨 印刷</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="カテゴリ">
+      <button class="tab" role="tab" aria-selected="true" onclick="show(0,this)"><span class="dot" style="background:var(--cyan)"></span>気道</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(1,this)"><span class="dot" style="background:var(--teal)"></span>薬剤</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(2,this)"><span class="dot" style="background:var(--red)"></span>緊急 (PALS)</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(3,this)"><span class="dot" style="background:var(--rose)"></span>区域・持続</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(4,this)"><span class="dot" style="background:var(--violet)"></span>輸液・輸血</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(5,this)"><span class="dot" style="background:var(--amber)"></span>バイタル</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ===== AIRWAY ===== -->
+  <section class="panel active" id="p0" style="--ac:var(--cyan)">
+    <div class="phead"><h2>気道・気管挿管</h2><span class="first" id="airAge">—</span></div>
+    <p class="sub">年齢式は概ね1歳以上で適用。新生児・乳児は体重ベースの目安を併記します。サイズは前後0.5を必ず準備。</p>
+
+    <div class="card">
+      <h3><span class="bar"></span>気管チューブ</h3>
+      <div class="dosegrid" id="ettGrid"></div>
+    </div>
+
+    <div class="bigrow">
+      <div class="card">
+        <h3><span class="bar"></span>声門上器具・喉頭鏡</h3>
+        <div class="dosegrid" id="sgaGrid"></div>
+      </div>
+      <div class="card">
+        <h3><span class="bar"></span>付属物</h3>
+        <div class="dosegrid" id="accGrid"></div>
+      </div>
+    </div>
+
+    <details class="refbox"><summary>文献</summary>
+      <p class="ref">非カフ ETT 内径＝(年齢/4)＋4（<b>Cole</b> の式）／カフ付き＝(年齢/4)＋3.5（<b>Khine HH, et al.</b> <i>Anesthesiology</i> 1997 ほか）。挿入長：経口＝(年齢/2)＋12 または 3×内径、新生児＝体重＋6cm（7-8-9 ルール）。LMA は各製造元の体重区分。基準：<b>Coté</b> A Practice of Anesthesia for Infants and Children.</p>
+    </details>
+  </section>
+
+  <!-- ===== DRUGS ===== -->
+  <section class="panel" id="p1" style="--ac:var(--teal)">
+    <div class="phead"><h2>麻酔薬</h2><span class="first">導入・筋弛緩・拮抗・補助薬</span></div>
+    <p class="sub">体重当たり用量から自動計算。上限・希釈は使用前に添付文書で確認。範囲表示は推奨投与域です。</p>
+
+    <div class="warn">
+      <h4>高アラート・注意</h4>
+      <ul>
+        <li>スキサメトニウム：高K血症・熱傷/挫滅・神経筋疾患・悪性高熱症の既往では禁忌。小児のルーチン使用は避ける（緊急/迅速導入に限定）。</li>
+        <li>ロクロニウム/スキサメトニウム使用時は逆転薬（スガマデクス）を即時使用できる体制を。</li>
+      </ul>
+    </div>
+
+    <div class="card"><h3><span class="bar"></span>導入・オピオイド</h3><div class="dosegrid" id="indGrid"></div></div>
+    <div class="card"><h3><span class="bar"></span>筋弛緩薬・拮抗</h3><div class="dosegrid" id="nmbGrid"></div></div>
+    <div class="card"><h3><span class="bar"></span>制吐・鎮痛・前投薬</h3><div class="dosegrid" id="adjGrid"></div></div>
+
+    <details class="refbox"><summary>文献</summary>
+      <p class="ref">小児用量は <b>Coté</b> / <b>Motoyama</b> 小児麻酔テキスト、各添付文書に基づく代表値。スキサメトニウム：乳児2 mg/kg・年長児1–2 mg/kg・IM 4 mg/kg(≤150 mg)（FDA Anectine 添付文書）。アトロピン：0.02 mg/kg、最大単回 0.5 mg(小児)/1 mg(思春期)。<b>「最小0.1 mgの必要性」は議論あり</b>（Barrington KJ. <i>The Myth of a Minimum Dose for Atropine.</i> Pediatrics 2011）。デキサメタゾン・パラセタモール・オンダンセトロンは成人上限でキャップ。</p>
+    </details>
+  </section>
+
+  <!-- ===== PALS ===== -->
+  <section class="panel" id="p2" style="--ac:var(--red)">
+    <div class="phead"><h2>緊急・蘇生（PALS）</h2><span class="first">→ 体重から一括算出</span></div>
+    <p class="sub">心停止・不整脈・ショック時の体重当たり用量とエネルギー量。アドレナリンは 1:10,000 を 0.1 mL/kg。</p>
+
+    <div class="card"><h3><span class="bar"></span>心停止・除細動</h3><div class="dosegrid" id="cprGrid"></div></div>
+    <div class="card"><h3><span class="bar"></span>不整脈・その他</h3><div class="dosegrid" id="arrGrid"></div></div>
+
+    <details class="refbox"><summary>文献</summary>
+      <p class="ref"><b>AHA PALS Guidelines</b>（2020）／ APLS。アドレナリン 0.01 mg/kg IV/IO。<b>除細動 初回2 → 4 → 以後最大10 J/kg</b>（成人量を超えない）。同期下カルディオバージョン 0.5–1 → 2 J/kg。アミオダロン 5 mg/kg、アデノシン 0.1 → 0.2 mg/kg。</p>
+    </details>
+  </section>
+
+  <!-- ===== REGIONAL / INFUSION ===== -->
+  <section class="panel" id="p3" style="--ac:var(--rose)">
+    <div class="phead"><h2>区域麻酔・持続静注</h2><span class="first">極量・持続レート・γ調製</span></div>
+    <p class="sub">局所麻酔薬の極量（単回）と代表的な持続静注レート。新生児・乳児はタンパク結合低下のため減量（半量目安）。</p>
+
+    <div class="warn">
+      <h4>LAST（局所麻酔薬中毒）に備える</h4>
+      <ul>
+        <li>必ず実測体重で極量を計算し、分割投与・頻回吸引・血管内誤注入の回避を。</li>
+        <li>20%脂肪乳剤（イントラリピッド）を手元に：初回 1.5 mL/kg ボーラス → 0.25 mL/kg/min 持続。</li>
+        <li>ブピバカインは新生児で心毒性が高い。長時間作用は<b>レボブピバカイン</b>を優先。</li>
+      </ul>
+    </div>
+
+    <div class="card"><h3><span class="bar"></span>局所麻酔薬・極量（単回）</h3><div class="dosegrid" id="laGrid"></div></div>
+    <div class="card"><h3><span class="bar"></span>持続静注（維持レート）</h3><div class="dosegrid" id="infGrid"></div></div>
+    <div class="card"><h3><span class="bar"></span>持続の調製・希釈早見</h3><div class="dosegrid" id="dilGrid"></div></div>
+
+    <details class="refbox"><summary>文献</summary>
+      <p class="ref">極量：リドカイン 4.5 mg/kg（アドレナリン併用 7 mg/kg）、ブピバカイン/レボブピバカイン 2.5 mg/kg、ロピバカイン 3 mg/kg（<b>NYSORA</b> 小児区域麻酔、Iowa Head&Neck Protocols）。新生児は減量。持続静注：プロポフォール 6–12 mg/kg/hr、レミフェンタニル 0.1–0.5 µg/kg/min、デクスメデトミジン 負荷0.5–1 µg/kg(10分)→維持0.2–1.0 µg/kg/hr（<b>BJA Education</b> 2020 小児デクスメデトミジン）、フェンタニル 1–5 µg/kg/hr、ミダゾラム 1–5 µg/kg/min、ケタミン 0.1–0.5 mg/kg/hr（鎮痛）。γ早見：体重×3 mg を 50 mL に溶くと 1 mL/hr = 1 µg/kg/min（1γ）。</p>
+    </details>
+  </section>
+
+  <!-- ===== FLUIDS / BLOOD ===== -->
+  <section class="panel" id="p4" style="--ac:var(--violet)">
+    <div class="phead"><h2>輸液・輸血</h2><span class="first">維持・欠乏・許容出血量</span></div>
+    <p class="sub">維持輸液は 4-2-1 ルール。維持には等張(バランス)輸液を用い、低張液は低Na血症リスクのため回避。</p>
+
+    <div class="card"><h3><span class="bar"></span>維持・欠乏・ボーラス</h3>
+      <div class="inrow">
+        <div class="field sm"><label for="fast">絶飲食 (時間)</label><input id="fast" type="number" inputmode="decimal" value="6" min="0" max="24" step="0.5" oninput="recalc()"></div>
+        <div class="doul" style="margin:0"><li>欠乏量 ≒ 維持 × 絶飲食時間。古典的には1時間目に½、2・3時間目に各¼を補充(現在はバランス輸液主体で柔軟に)。</li></div>
+      </div>
+      <div class="dosegrid" id="fluidGrid"></div>
+    </div>
+
+    <div class="card"><h3><span class="bar"></span>循環血液量・許容出血量(MABL)</h3>
+      <div class="inrow">
+        <div class="field sm"><label for="hbi">術前Hb</label><input id="hbi" type="number" inputmode="decimal" value="11" min="3" max="22" step="0.1" oninput="recalc()"></div>
+        <div class="field sm"><label for="hbmin">許容下限Hb</label><input id="hbmin" type="number" inputmode="decimal" value="7" min="3" max="15" step="0.1" oninput="recalc()"></div>
+        <div class="doul" style="margin:0"><li>MABL ≒ 循環血液量 ×(術前Hb − 下限Hb)/術前Hb。濃厚赤血球 10–15 mL/kg で Hb 約2–3 g/dL 上昇。</li></div>
+      </div>
+      <div class="dosegrid" id="bloodGrid"></div>
+    </div>
+
+    <details class="refbox"><summary>文献</summary>
+      <p class="ref">維持輸液：<b>Holliday MA, Segar WE.</b> <i>Pediatrics</i> 1957（4-2-1）。低張液回避：APA / NICE 小児輸液ガイダンス。循環血液量・MABL：<b>Coté</b> 小児麻酔テキスト（新生児80–90、乳児75–80、小児70–75 mL/kg。早産児90–100）。</p>
+    </details>
+  </section>
+
+  <!-- ===== VITALS ===== -->
+  <section class="panel" id="p5" style="--ac:var(--amber)">
+    <div class="phead"><h2>正常バイタル・低血圧閾値</h2><span class="first" id="vitAge">—</span></div>
+    <p class="sub">年齢区分の正常域(覚醒時)。SBP下限(低血圧の定義)は <b>1–10歳：70＋2×年齢</b>、新生児&lt;60、&gt;10歳&lt;90。</p>
+
+    <div class="card"><h3><span class="bar"></span>この年齢の目安</h3><div class="dosegrid" id="vitGrid"></div></div>
+
+    <details class="refbox"><summary>文献</summary>
+      <p class="ref"><b>AHA PALS</b> 年齢別正常値・低血圧(収縮期血圧 5パーセンタイル)定義。SBP下限：新生児&lt;60、乳児&lt;70、1–10歳&lt;70＋(2×年齢)、&gt;10歳&lt;90 mmHg。</p>
+    </details>
+  </section>
+
+  <footer>
+    <div class="disc"><b>注意：</b>本ツールは公表文献に基づく投与量・サイズの目安(意思決定支援)であり、臨床判断・最新ガイドライン・施設プロトコル・添付文書での確認に代わるものではありません。実測体重を用い、投与前に必ず照合してください。</div>
+    <div class="ver">v2 · 離島麻酔ツールキット · 完全オフライン対応（PWA / Service Worker）</div>
+  </footer>
+</main>
+
+<script>
+  var unit='y';
+  function $(id){return document.getElementById(id);}
+  function r(v,d){ if(!isFinite(v))return '—'; d=(d==null)?1:d; var m=Math.pow(10,d); var n=Math.round(v*m)/m; return (n%1===0)?n.toFixed(0):n.toFixed(d); }
+  function rng(lo,hi,dec){ return r(lo,dec)+'–'+r(hi,dec); }
+  function round05(x){ return Math.ceil(x*2-0.5)/2; }
+  function dose(lab,val,unitTxt,note,alt){
+    return '<div class="dose'+(alt?' alt':'')+'"><span class="lab">'+lab+'</span><span class="val">'+val+'</span>'+
+      (unitTxt?'<span class="unit">'+unitTxt+'</span>':'')+(note?'<div class="note">'+note+'</div>':'')+'</div>';
+  }
+
+  function setUnit(u){ unit=u; $('uY').setAttribute('aria-pressed',u==='y'); $('uM').setAttribute('aria-pressed',u==='m'); recalc(); }
+  function show(i,btn){
+    document.querySelectorAll('.panel').forEach(function(p,idx){p.classList.toggle('active',idx===i);});
+    document.querySelectorAll('.tab').forEach(function(t){t.setAttribute('aria-selected','false');});
+    btn.setAttribute('aria-selected','true'); window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function ageYears(){ var v=Number($('age').value)||0; return unit==='m'? v/12 : v; }
+  function ageMonths(){ return ageYears()*12; }
+
+  function estWeight(){
+    var aM=ageMonths(), aY=ageYears(), w;
+    if(aM<12) w=(0.5*aM)+4;
+    else if(aY<=5) w=(2*aY)+8;
+    else w=(3*aY)+7;
+    $('wt').value = r(w,1); recalc();
+  }
+
+  function ettInfo(aY,aM,wt){
+    var unc,cuff,idNum;
+    if(aY>=1){ idNum=round05(aY/4+4); unc=idNum.toFixed(1); cuff=round05(aY/4+3.5).toFixed(1); }
+    else if(aM>=6){ unc='3.5–4.0'; cuff='3.5'; idNum=3.5; }
+    else if(aM>=1){ unc='3.5'; cuff='3.0–3.5'; idNum=3.5; }
+    else { if(wt<1){unc='2.5';cuff='—';idNum=2.5;}
+      else if(wt<2){unc='2.5–3.0';cuff='2.5';idNum=2.75;}
+      else if(wt<3){unc='3.0';cuff='3.0';idNum=3.0;}
+      else {unc='3.0–3.5';cuff='3.0';idNum=3.25;} }
+    var depthOral=(aM<1)?Math.round(wt+6):Math.round(aY/2+12);
+    var depthNasal=depthOral+(aM<1?2:3);
+    return {unc:unc,cuff:cuff,depthOral:depthOral,depthNasal:depthNasal,suction:Math.round(idNum*2),id3:Math.round(idNum*3)};
+  }
+  function lmaSize(wt){ if(wt<5)return '1'; if(wt<10)return '1.5'; if(wt<20)return '2'; if(wt<30)return '2.5'; if(wt<50)return '3'; return '4'; }
+  function blade(aY,aM){ if(aM<1)return 'Miller 0'; if(aY<1)return 'Miller 0–1'; if(aY<2)return 'Miller 1 / Mac 2'; if(aY<6)return 'Mac 2'; return 'Mac 2–3'; }
+  function maint(wt){ if(wt<=10)return wt*4; if(wt<=20)return 40+(wt-10)*2; return 60+(wt-20)*1; }
+  function ebvKg(aM,aY){ if(aM<1)return 85; if(aY<1)return 78; if(aY<12)return 72; return 70; }
+  function ageLabel(aY,aM){
+    if(aM<1)return '新生児'; if(aY<1)return '乳児 ('+r(aM,0)+'か月)';
+    if(aY<3)return '幼児 ('+r(aY,1)+'歳)'; if(aY<6)return '未就学 ('+r(aY,1)+'歳)';
+    if(aY<12)return '学童 ('+r(aY,1)+'歳)'; return '思春期 ('+r(aY,1)+'歳)';
+  }
+  function vitals(aY,aM){
+    if(aM<1)   return {hr:'120–160',rr:'40–60'};
+    if(aM<12)  return {hr:'110–160',rr:'30–50'};
+    if(aY<3)   return {hr:'90–150', rr:'24–40'};
+    if(aY<6)   return {hr:'80–140', rr:'22–34'};
+    if(aY<12)  return {hr:'70–120', rr:'18–30'};
+    return {hr:'60–100',rr:'12–20'};
+  }
+  function sbpLow(aY,aM){ if(aM<1)return 60; if(aM<12)return 70; if(aY<=10)return Math.round(70+2*aY); return 90; }
+
+  var LAST_SUMMARY='';
+
+  function recalc(){
+    var wt=Number($('wt').value)||0, aY=ageYears(), aM=ageMonths();
+    var ageTxt=ageLabel(aY,aM);
+    $('airAge').textContent = ageTxt;
+    $('vitAge').textContent = ageTxt;
+
+    /* ---- AIRWAY ---- */
+    var e=ettInfo(aY,aM,wt);
+    $('ettGrid').innerHTML =
+      dose('非カフ 内径 ID','<span style="font-size:.7em">⌀</span>'+e.unc,'mm','前後0.5を準備')+
+      dose('カフ付き 内径 ID','<span style="font-size:.7em">⌀</span>'+e.cuff,'mm','微小カフは約3kgから')+
+      dose('経口 挿入長','<span>'+e.depthOral+'</span>','cm','口角・≒3×内径('+e.id3+')')+
+      dose('経鼻 挿入長','<span>'+e.depthNasal+'</span>','cm','鼻孔',true);
+    $('sgaGrid').innerHTML =
+      dose('LMA サイズ',lmaSize(wt),'','体重区分')+
+      dose('喉頭鏡ブレード',blade(aY,aM),'','');
+    $('accGrid').innerHTML =
+      dose('吸引カテーテル',e.suction,'Fr','≒2×内径')+
+      dose('胃管',Math.max(6,e.suction)+'–'+(e.suction+2),'Fr','目安',true);
+
+    /* ---- DRUGS ---- */
+    var atrop=Math.min(1.0, Math.max(0.1, 0.02*wt));
+    var sux = (aY<1) ? r(2*wt,0) : rng(1*wt,2*wt,0);
+    var suxIM = Math.min(150, 4*wt);
+    $('indGrid').innerHTML =
+      dose('プロポフォール',rng(2.5*wt,3.5*wt,0),'mg','2.5–3.5 mg/kg')+
+      dose('ケタミン (IV)',rng(1*wt,2*wt,0),'mg','1–2 mg/kg・IM 5–10')+
+      dose('チオペンタール',rng(4*wt,6*wt,0),'mg','4–6 mg/kg')+
+      dose('フェンタニル',rng(1*wt,2*wt,0),'µg','1–2 µg/kg');
+    $('nmbGrid').innerHTML =
+      dose('ロクロニウム',r(0.6*wt,1),'mg','0.6（RSI 1.2='+r(1.2*wt,1)+'）')+
+      dose('スキサメトニウム',sux,'mg',(aY<1?'乳児2':'1–2')+' mg/kg・IM '+r(suxIM,0))+
+      dose('スガマデクス',r(2*wt,0),'mg','深部4='+r(4*wt,0)+'・即時16='+r(16*wt,0))+
+      dose('ネオスチグミン',r(0.05*wt,2),'mg','＋アトロピン '+r(atrop,2)+' mg',true);
+    var dexa=Math.min(8,0.15*wt), onda=Math.min(4,0.1*wt), para=Math.min(1000,15*wt), mid=Math.min(20,0.5*wt);
+    $('adjGrid').innerHTML =
+      dose('アトロピン',r(atrop,2),'mg','0.02 mg/kg(最小0.1*・最大0.5–1)')+
+      dose('デキサメタゾン',r(dexa,1),'mg','0.15 mg/kg(≤8)')+
+      dose('オンダンセトロン',r(onda,1),'mg','0.1 mg/kg(≤4)')+
+      dose('パラセタモール(IV)',r(para,0),'mg','15 mg/kg(≤1000)')+
+      dose('ミダゾラム(経口前投薬)',r(mid,1),'mg','0.5 mg/kg(≤20)',true);
+
+    /* ---- PALS ---- */
+    $('cprGrid').innerHTML =
+      dose('アドレナリン','<span>'+r(0.01*wt,2)+'</span>','mg','1:10,000 を '+r(0.1*wt,1)+' mL IV/IO')+
+      dose('除細動 (初回)','<span>'+r(2*wt,0)+'</span>','J','初回2 → 4='+r(4*wt,0)+' → 以後≤10='+r(10*wt,0))+
+      dose('アミオダロン (VF/pVT)',r(5*wt,0),'mg','5 mg/kg')+
+      dose('輸液ボーラス',rng(10*wt,20*wt,0),'mL','晶質液(新生児10)',true);
+    $('arrGrid').innerHTML =
+      dose('カルディオバージョン',rng(0.5*wt,1*wt,1),'J','同期・以後 2 J/kg='+r(2*wt,0))+
+      dose('アデノシン (初回)',r(Math.min(6,0.1*wt),2),'mg','次回 0.2 mg/kg(≤12)')+
+      dose('アトロピン',r(atrop,2),'mg','徐脈・0.02 mg/kg')+
+      dose('塩化Ca 10%',r(20*wt,0),'mg','='+r(0.2*wt,1)+' mL (0.2 mL/kg)')+
+      dose('ブドウ糖','<span>'+r(0.5*wt,1)+'</span>','g','D10 を '+r(5*wt,0)+' mL')+
+      dose('炭酸水素Na',r(1*wt,1),'mEq','1 mEq/kg',true)+
+      dose('ナロキソン',r(0.01*wt,2),'mg','0.01 mg/kg',true);
+
+    /* ---- REGIONAL / LOCAL ANESTHETICS ---- */
+    var neo = (aM<1);
+    var lidoP=Math.min(300,4.5*wt), lidoE=Math.min(500,7*wt), bupi=Math.min(175,2.5*wt), ropi=Math.min(200,3*wt);
+    $('laGrid').innerHTML =
+      dose('リドカイン (極量)','<span>'+r(lidoP,0)+'</span>','mg','4.5 mg/kg・1%なら '+r(lidoP/10,1)+' mL')+
+      dose('リドカイン＋アドレナリン',r(lidoE,0),'mg','7 mg/kg・1%なら '+r(lidoE/10,1)+' mL',true)+
+      dose('ブピ/レボブピバカイン',r(bupi,0),'mg','2.5 mg/kg・0.25%なら '+r(bupi/2.5,1)+' mL')+
+      dose('ロピバカイン',r(ropi,0),'mg','3 mg/kg・0.2%なら '+r(ropi/2,1)+' mL')+
+      (neo?dose('新生児・乳児','半量','','タンパク結合↓のため減量',true):'');
+
+    /* ---- INFUSIONS (maintenance) ---- */
+    $('infGrid').innerHTML =
+      dose('プロポフォール (TIVA維持)',rng(6*wt,12*wt,0),'mg/hr','6–12 mg/kg/hr')+
+      dose('レミフェンタニル',rng(0.1*wt,0.5*wt,1),'µg/min','0.1–0.5 µg/kg/min')+
+      dose('デクスメデトミジン (維持)',rng(0.2*wt,1.0*wt,1),'µg/hr','0.2–1.0 µg/kg/hr・負荷 '+r(0.5*wt,1)+'–'+r(1*wt,1)+'µg(10分)')+
+      dose('フェンタニル (持続)',rng(1*wt,5*wt,0),'µg/hr','1–5 µg/kg/hr',true)+
+      dose('ミダゾラム (鎮静)',rng(1*wt,5*wt,0),'µg/min','1–5 µg/kg/min',true)+
+      dose('ケタミン (鎮痛持続)',rng(0.1*wt,0.5*wt,1),'mg/hr','0.1–0.5 mg/kg/hr',true);
+
+    /* ---- DILUTION / GAMMA ---- */
+    $('dilGrid').innerHTML =
+      dose('γ調製の早見','<span>'+r(3*wt,0)+'</span>','mg/50mL','1 mL/hr = 1 µg/kg/min (1γ)')+
+      dose('アドレナリン (蘇生)',r(0.1*wt,1),'mL','1:10,000(0.1mg/mL) を 0.1 mL/kg')+
+      dose('20%脂肪乳剤 (LAST)',r(1.5*wt,1),'mL','初回ボーラス 1.5 mL/kg',true);
+
+    /* ---- FLUIDS ---- */
+    var mh=maint(wt), fast=Number($('fast').value)||0, def=mh*fast;
+    $('fluidGrid').innerHTML =
+      dose('維持輸液 (4-2-1)','<span>'+r(mh,0)+'</span>','mL/hr','1日 ≒ '+r(mh*24,0)+' mL')+
+      dose('絶飲食欠乏量',r(def,0),'mL',fast+'時間ぶん')+
+      dose('1時間目の補充',r(mh+def*0.5,0),'mL','維持＋欠乏½',true)+
+      dose('ボーラス',rng(10*wt,20*wt,0),'mL','10–20 mL/kg',true);
+    /* ---- BLOOD ---- */
+    var ebvK=ebvKg(aM,aY), ebv=ebvK*wt, hbi=Number($('hbi').value)||0, hbmin=Number($('hbmin').value)||0;
+    var mabl=(hbi>0)? ebv*(hbi-hbmin)/hbi : 0; if(mabl<0)mabl=0;
+    $('bloodGrid').innerHTML =
+      dose('循環血液量 (EBV)','<span>'+r(ebv,0)+'</span>','mL',ebvK+' mL/kg')+
+      dose('許容出血量 (MABL)',r(mabl,0),'mL','Hb '+r(hbi,1)+'→'+r(hbmin,1))+
+      dose('濃厚赤血球',rng(10*wt,15*wt,0),'mL','Hb 約2–3 g/dL ↑',true);
+
+    /* ---- VITALS ---- */
+    var v=vitals(aY,aM), sl=sbpLow(aY,aM);
+    $('vitGrid').innerHTML =
+      dose('SBP 下限(低血圧)','<span>'+sl+'</span>','mmHg','これ未満は低血圧')+
+      dose('心拍数 (正常域)',v.hr,'/min','覚醒時')+
+      dose('呼吸数 (正常域)',v.rr,'/min','覚醒時')+
+      dose('推定体重(年齢から)',r((aM<12)?(0.5*aM+4):(aY<=5?2*aY+8:3*aY+7),1),'kg','APLS式・参考',true);
+
+    /* ---- TEXT SUMMARY (copy) ---- */
+    LAST_SUMMARY =
+      '【小児麻酔オールインワン】'+ageTxt+' / 体重 '+r(wt,1)+' kg\n'+
+      '― 気道 ―\n'+
+      'ETT 非カフ '+e.unc+' / カフ付 '+e.cuff+' mm、深さ 経口'+e.depthOral+' 経鼻'+e.depthNasal+' cm\n'+
+      'LMA '+lmaSize(wt)+'、ブレード '+blade(aY,aM)+'\n'+
+      '― 導入/筋弛緩 ―\n'+
+      'プロポフォール '+rng(2.5*wt,3.5*wt,0)+' mg、フェンタニル '+rng(1*wt,2*wt,0)+' µg\n'+
+      'ロクロニウム '+r(0.6*wt,1)+' mg(RSI '+r(1.2*wt,1)+')、スキサメトニウム '+sux+' mg\n'+
+      'スガマデクス '+r(2*wt,0)+'/'+r(4*wt,0)+'/'+r(16*wt,0)+' mg、アトロピン '+r(atrop,2)+' mg\n'+
+      '― 緊急(PALS) ―\n'+
+      'アドレナリン '+r(0.01*wt,2)+' mg(1:10,000 '+r(0.1*wt,1)+' mL)、除細動 初回'+r(2*wt,0)+'→'+r(4*wt,0)+'→≤'+r(10*wt,0)+' J\n'+
+      'アミオダロン '+r(5*wt,0)+' mg、輸液ボーラス '+rng(10*wt,20*wt,0)+' mL\n'+
+      '― 局所麻酔 極量 ―\n'+
+      'リドカイン '+r(lidoP,0)+'(＋Ad '+r(lidoE,0)+') / ブピ・レボ '+r(bupi,0)+' / ロピ '+r(ropi,0)+' mg\n'+
+      '― 輸液 ―\n'+
+      '維持 '+r(mh,0)+' mL/hr、EBV '+r(ebv,0)+' mL、MABL '+r(mabl,0)+' mL\n'+
+      '― バイタル ―\n'+
+      'SBP下限 '+sl+' mmHg、HR '+v.hr+'、RR '+v.rr+'\n'+
+      '※意思決定支援。投与前に必ず照合。';
+  }
+
+  function copySummary(){
+    var btn=$('copyBtn'), txt=LAST_SUMMARY;
+    function done(){ var o=btn.textContent; btn.textContent='✓ コピーしました'; btn.classList.add('ok');
+      setTimeout(function(){btn.textContent=o; btn.classList.remove('ok');},1500); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done,function(){fallback(txt,done);});
+    } else { fallback(txt,done); }
+  }
+  function fallback(txt,cb){
+    var ta=document.createElement('textarea'); ta.value=txt;
+    ta.style.position='fixed'; ta.style.top='-1000px'; document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try{ document.execCommand('copy'); cb(); }catch(err){ alert('コピーできませんでした。手動で選択してください。'); }
+    document.body.removeChild(ta);
+  }
+
+  recalc();
+</script>
+<script>
+  /* 完全オフライン: Service Worker 登録（http/https・localhost のみ動作。file:// では無効だがアプリは外部依存ゼロで単体起動可） */
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+  }
+</script>
+</body>
+</html>

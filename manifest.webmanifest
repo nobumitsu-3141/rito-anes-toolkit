@@ -1,0 +1,17 @@
+{
+  "name": "小児麻酔オールインワン",
+  "short_name": "小児麻酔",
+  "description": "離島麻酔ツールキット・小児：体重/年齢から気道サイズ・薬剤・PALS・区域麻酔・輸液を一括算出",
+  "lang": "ja",
+  "start_url": ".",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c111b",
+  "theme_color": "#0c111b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
