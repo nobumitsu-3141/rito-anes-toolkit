@@ -1,7 +1,7 @@
 /* 小児麻酔オールインワン｜離島麻酔ツールキット — Service Worker
    完全オフライン: アプリ一式をキャッシュし、電波がなくても起動できるようにする。
    アプリを更新したら CACHE のバージョン文字列を上げること（古いキャッシュは自動削除）。 */
-const CACHE = 'rito-peds-v2.0.0';
+const CACHE = 'rito-peds-v2.0.1';
 const ASSETS = [
   './',
   './index.html',

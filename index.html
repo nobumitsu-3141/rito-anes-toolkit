@@ -164,10 +164,10 @@
     <nav class="tabs" role="tablist" aria-label="カテゴリ">
       <button class="tab" role="tab" aria-selected="true" onclick="show(0,this)"><span class="dot" style="background:var(--cyan)"></span>気道</button>
       <button class="tab" role="tab" aria-selected="false" onclick="show(1,this)"><span class="dot" style="background:var(--teal)"></span>薬剤</button>
-      <button class="tab" role="tab" aria-selected="false" onclick="show(2,this)"><span class="dot" style="background:var(--red)"></span>緊急 (PALS)</button>
-      <button class="tab" role="tab" aria-selected="false" onclick="show(3,this)"><span class="dot" style="background:var(--rose)"></span>区域・持続</button>
-      <button class="tab" role="tab" aria-selected="false" onclick="show(4,this)"><span class="dot" style="background:var(--violet)"></span>輸液・輸血</button>
-      <button class="tab" role="tab" aria-selected="false" onclick="show(5,this)"><span class="dot" style="background:var(--amber)"></span>バイタル</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(2,this)"><span class="dot" style="background:var(--amber)"></span>バイタル</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(3,this)"><span class="dot" style="background:var(--red)"></span>緊急 (PALS)</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(4,this)"><span class="dot" style="background:var(--rose)"></span>区域・持続</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="show(5,this)"><span class="dot" style="background:var(--violet)"></span>輸液・輸血</button>
     </nav>
   </div>
 </header>
@@ -219,6 +219,18 @@
 
     <details class="refbox"><summary>文献</summary>
       <p class="ref">小児用量は <b>Coté</b> / <b>Motoyama</b> 小児麻酔テキスト、各添付文書に基づく代表値。スキサメトニウム：乳児2 mg/kg・年長児1–2 mg/kg・IM 4 mg/kg(≤150 mg)（FDA Anectine 添付文書）。アトロピン：0.02 mg/kg、最大単回 0.5 mg(小児)/1 mg(思春期)。<b>「最小0.1 mgの必要性」は議論あり</b>（Barrington KJ. <i>The Myth of a Minimum Dose for Atropine.</i> Pediatrics 2011）。デキサメタゾン・パラセタモール・オンダンセトロンは成人上限でキャップ。</p>
+    </details>
+  </section>
+
+  <!-- ===== VITALS ===== -->
+  <section class="panel" id="p5" style="--ac:var(--amber)">
+    <div class="phead"><h2>正常バイタル・低血圧閾値</h2><span class="first" id="vitAge">—</span></div>
+    <p class="sub">年齢区分の正常域(覚醒時)。SBP下限(低血圧の定義)は <b>1–10歳：70＋2×年齢</b>、新生児&lt;60、&gt;10歳&lt;90。</p>
+
+    <div class="card"><h3><span class="bar"></span>この年齢の目安</h3><div class="dosegrid" id="vitGrid"></div></div>
+
+    <details class="refbox"><summary>文献</summary>
+      <p class="ref"><b>AHA PALS</b> 年齢別正常値・低血圧(収縮期血圧 5パーセンタイル)定義。SBP下限：新生児&lt;60、乳児&lt;70、1–10歳&lt;70＋(2×年齢)、&gt;10歳&lt;90 mmHg。</p>
     </details>
   </section>
 
@@ -282,18 +294,6 @@
 
     <details class="refbox"><summary>文献</summary>
       <p class="ref">維持輸液：<b>Holliday MA, Segar WE.</b> <i>Pediatrics</i> 1957（4-2-1）。低張液回避：APA / NICE 小児輸液ガイダンス。循環血液量・MABL：<b>Coté</b> 小児麻酔テキスト（新生児80–90、乳児75–80、小児70–75 mL/kg。早産児90–100）。</p>
-    </details>
-  </section>
-
-  <!-- ===== VITALS ===== -->
-  <section class="panel" id="p5" style="--ac:var(--amber)">
-    <div class="phead"><h2>正常バイタル・低血圧閾値</h2><span class="first" id="vitAge">—</span></div>
-    <p class="sub">年齢区分の正常域(覚醒時)。SBP下限(低血圧の定義)は <b>1–10歳：70＋2×年齢</b>、新生児&lt;60、&gt;10歳&lt;90。</p>
-
-    <div class="card"><h3><span class="bar"></span>この年齢の目安</h3><div class="dosegrid" id="vitGrid"></div></div>
-
-    <details class="refbox"><summary>文献</summary>
-      <p class="ref"><b>AHA PALS</b> 年齢別正常値・低血圧(収縮期血圧 5パーセンタイル)定義。SBP下限：新生児&lt;60、乳児&lt;70、1–10歳&lt;70＋(2×年齢)、&gt;10歳&lt;90 mmHg。</p>
     </details>
   </section>
 
