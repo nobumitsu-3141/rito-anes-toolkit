@@ -242,8 +242,19 @@
     <div class="card"><h3><span class="bar"></span>心停止・除細動</h3><div class="dosegrid" id="cprGrid"></div></div>
     <div class="card"><h3><span class="bar"></span>不整脈・その他</h3><div class="dosegrid" id="arrGrid"></div></div>
 
+    <div class="card"><h3><span class="bar"></span>周術期クライシス（アナフィラキシー・MH）</h3>
+      <div class="warn" style="margin:0 0 12px">
+        <h4>悪性高熱症（MH）— 直ちに</h4>
+        <ul>
+          <li>トリガー（揮発性麻酔薬・スキサメトニウム）を中止 → 100%O₂で過換気。</li>
+          <li>ダントロレンを下記用量で。冷却・高K血症/不整脈/アシドーシスを併行治療し、MHAUSへ連絡。</li>
+        </ul>
+      </div>
+      <div class="dosegrid" id="crisisGrid"></div>
+    </div>
+
     <details class="refbox"><summary>文献</summary>
-      <p class="ref"><b>AHA PALS Guidelines</b>（2020）／ APLS。アドレナリン 0.01 mg/kg IV/IO。<b>除細動 初回2 → 4 → 以後最大10 J/kg</b>（成人量を超えない）。同期下カルディオバージョン 0.5–1 → 2 J/kg。アミオダロン 5 mg/kg、アデノシン 0.1 → 0.2 mg/kg。</p>
+      <p class="ref"><b>AHA PALS Guidelines</b>（2020）／ APLS。アドレナリン 0.01 mg/kg IV/IO。<b>除細動 初回2 → 4 → 以後最大10 J/kg</b>（成人量を超えない）。同期下カルディオバージョン 0.5–1 → 2 J/kg。アミオダロン 5 mg/kg、アデノシン 0.1 → 0.2 mg/kg。<br><b>アナフィラキシー</b>：アドレナリン <b>0.01 mg/kg 筋注（1:1,000）</b>、最大0.3 mg(&lt;30kg)/0.5 mg(思春期)、5–15分で反復（<b>AAP</b> Pediatrics 2017）。<b>悪性高熱症</b>：ダントロレン 2.5 mg/kg→反復、最大10 mg/kg目安（<b>MHAUS</b>）。<b>硫酸Mg</b>：torsades/重症喘息 25–50(–75) mg/kg、最大2 g（PALS / BNFc）。</p>
     </details>
   </section>
 
@@ -421,6 +432,12 @@
       dose('ブドウ糖','<span>'+r(0.5*wt,1)+'</span>','g','D10 を '+r(5*wt,0)+' mL')+
       dose('炭酸水素Na',r(1*wt,1),'mEq','1 mEq/kg',true)+
       dose('ナロキソン',r(0.01*wt,2),'mg','0.01 mg/kg',true);
+    /* ---- PERI-OP CRISIS (anaphylaxis / MH / Mg) ---- */
+    var anaCap=(wt<30)?0.3:0.5, ana=Math.min(anaCap,0.01*wt), mg2=Math.min(2000,50*wt);
+    $('crisisGrid').innerHTML =
+      dose('アドレナリン（アナフィラキシー IM）','<span>'+r(ana,2)+'</span>','mg','0.01 mg/kg・1:1,000 を '+r(ana,2)+' mL 大腿IM（最大'+anaCap+'）')+
+      dose('ダントロレン（MH 初回）',r(2.5*wt,0),'mg','2.5 mg/kg・反復で最大10='+r(10*wt,0)+' mg')+
+      dose('硫酸マグネシウム',rng(25*wt,mg2,0),'mg','torsades/喘息 25–50(–75)・最大2g・20分で',true);
 
     /* ---- REGIONAL / LOCAL ANESTHETICS ---- */
     var neo = (aM<1);
@@ -483,6 +500,7 @@
       '― 緊急(PALS) ―\n'+
       'アドレナリン '+r(0.01*wt,2)+' mg(1:10,000 '+r(0.1*wt,1)+' mL)、除細動 初回'+r(2*wt,0)+'→'+r(4*wt,0)+'→≤'+r(10*wt,0)+' J\n'+
       'アミオダロン '+r(5*wt,0)+' mg、輸液ボーラス '+rng(10*wt,20*wt,0)+' mL\n'+
+      'アナフィラキシーAd(IM) '+r(ana,2)+' mg、ダントロレン初回 '+r(2.5*wt,0)+' mg、Mg '+rng(25*wt,mg2,0)+' mg\n'+
       '― 局所麻酔 極量 ―\n'+
       'リドカイン '+r(lidoP,0)+'(＋Ad '+r(lidoE,0)+') / ブピ・レボ '+r(bupi,0)+' / ロピ '+r(ropi,0)+' mg\n'+
       '― 輸液 ―\n'+
