@@ -310,7 +310,10 @@
 
   <footer>
     <div class="disc"><b>注意：</b>本ツールは公表文献に基づく投与量・サイズの目安(意思決定支援)であり、臨床判断・最新ガイドライン・施設プロトコル・添付文書での確認に代わるものではありません。実測体重を用い、投与前に必ず照合してください。</div>
-    <div class="ver">v2 · 離島麻酔ツールキット · 完全オフライン対応（PWA / Service Worker）</div>
+    <div class="ver">
+      <button class="iconbtn" onclick="forceUpdate()" title="サーバから最新版を取り直す（要ネット）" style="font-size:11px;padding:5px 9px;margin-right:8px">⟳ 最新に更新</button>
+      build 2.0.4 · 離島麻酔ツールキット · 完全オフライン対応（PWA / Service Worker）
+    </div>
   </footer>
 </main>
 
@@ -529,9 +532,29 @@
   recalc();
 </script>
 <script>
-  /* 完全オフライン: Service Worker 登録（http/https・localhost のみ動作。file:// では無効だがアプリは外部依存ゼロで単体起動可） */
+  /* 完全オフライン + 自動更新: Service Worker 登録（http/https・localhost のみ動作。file:// では無効だがアプリは外部依存ゼロで単体起動可）
+     新しいSWが有効化されたら自動で一度だけリロード→最新画面に差し替わる。 */
   if('serviceWorker' in navigator){
-    window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+    var __reloaded=false;
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+      if(__reloaded) return; __reloaded=true; window.location.reload();
+    });
+    function __swUpdate(){ navigator.serviceWorker.getRegistration().then(function(reg){ if(reg) reg.update(); }).catch(function(){}); }
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('sw.js').then(function(reg){ reg.update(); }).catch(function(){});
+    });
+    /* アプリを前面に戻したときも更新チェック（iOSのホーム画面アプリ対策） */
+    document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') __swUpdate(); });
+  }
+  /* 手動の強制更新（escape hatch・要ネット）: SW登録とキャッシュを消して再取得 */
+  function forceUpdate(){
+    var fin=function(){ location.reload(); };
+    var p=Promise.resolve();
+    if('serviceWorker' in navigator){
+      p=navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){return r.unregister();})); });
+    }
+    p.then(function(){ if(window.caches) return caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){return caches.delete(k);})); }); })
+     .then(fin,fin);
   }
 </script>
 </body>

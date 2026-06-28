@@ -1,7 +1,10 @@
 /* 小児麻酔オールインワン｜離島麻酔ツールキット — Service Worker
-   完全オフライン: アプリ一式をキャッシュし、電波がなくても起動できるようにする。
-   アプリを更新したら CACHE のバージョン文字列を上げること（古いキャッシュは自動削除）。 */
-const CACHE = 'rito-peds-v2.0.3';
+   完全オフライン + 自動更新。
+   ・install: アプリ一式を HTTPキャッシュをバイパスして取得しキャッシュ → skipWaiting で即待機解除
+   ・activate: 旧キャッシュを削除 → clients.claim()（ページ側の controllerchange が発火し自動リロード）
+   ・fetch: キャッシュ優先（オフライン確実）。無ければネットワーク。
+   アプリを更新したら必ず CACHE のバージョン文字列を上げること（index.html のフッター build 表記も合わせる）。 */
+const CACHE = 'rito-peds-v2.0.4';
 const ASSETS = [
   './',
   './index.html',
@@ -12,8 +15,14 @@ const ASSETS = [
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
-    caches.open(CACHE).then(function (c) { return c.addAll(ASSETS); })
-      .then(function () { return self.skipWaiting(); })
+    caches.open(CACHE).then(function (c) {
+      // cache:'reload' でブラウザのHTTPキャッシュを使わず常に最新を取得
+      return Promise.all(ASSETS.map(function (u) {
+        return fetch(new Request(u, { cache: 'reload' }))
+          .then(function (resp) { if (resp && resp.ok) return c.put(u, resp); })
+          .catch(function () {});
+      }));
+    }).then(function () { return self.skipWaiting(); })
   );
 });
 
@@ -25,8 +34,8 @@ self.addEventListener('activate', function (e) {
   );
 });
 
-/* キャッシュ優先（オフライン確実）。無ければネットワーク、それも失敗ならindexを返す。
-   取得できた新規GETはバックグラウンドでキャッシュへ追記。 */
+/* キャッシュ優先（オフライン確実）。無ければネットワーク、取得できた新規GETは追記。
+   ナビゲーション要求がオフラインで失敗したら index.html を返す。 */
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
   e.respondWith(
