@@ -4,7 +4,7 @@
    ・activate: 旧キャッシュを削除 → clients.claim()（ページ側の controllerchange が発火し自動リロード）
    ・fetch: キャッシュ優先（オフライン確実）。無ければネットワーク。
    アプリを更新したら必ず CACHE のバージョン文字列を上げること（index.html のフッター build 表記も合わせる）。 */
-const CACHE = 'rito-peds-v2.0.4';
+const CACHE = 'rito-peds-v2.0.5';
 const ASSETS = [
   './',
   './index.html',
@@ -29,7 +29,7 @@ self.addEventListener('install', function (e) {
 self.addEventListener('activate', function (e) {
   e.waitUntil(
     caches.keys().then(function (keys) {
-      return Promise.all(keys.map(function (k) { if (k !== CACHE) return caches.delete(k); }));
+      return Promise.all(keys.map(function (k) { if (k.startsWith('rito-peds-') && k !== CACHE) return caches.delete(k); }));
     }).then(function () { return self.clients.claim(); })
   );
 });
